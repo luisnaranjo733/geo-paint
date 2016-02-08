@@ -5,9 +5,13 @@
         android:id="@+id/pen"
         android:title="Pen"
         android:icon="@android:drawable/ic_menu_edit"
-        android:tint="#5a6518"
         app:showAsAction="ifRoom"
+        />
 
+    <item
+        android:id="@+id/pick_color_option"
+        android:title="@string/color_picker_option"
+        android:onClick="pickColor"
         />
 
 </menu>
