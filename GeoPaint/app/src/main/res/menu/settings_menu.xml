@@ -2,16 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/pen"
-        android:title="Pen"
+        android:id="@+id/toggle_pen_option"
+        android:title="Toggle pen"
         android:icon="@android:drawable/ic_menu_edit"
+        android:onClick="togglePen"
         app:showAsAction="ifRoom"
         />
 
     <item
-        android:id="@+id/pick_color_option"
-        android:title="@string/color_picker_option"
+        android:title="Pick pen color"
         android:onClick="pickColor"
         />
-
 </menu>

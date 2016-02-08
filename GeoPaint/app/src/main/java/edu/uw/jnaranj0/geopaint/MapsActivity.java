@@ -1,8 +1,11 @@
 package edu.uw.jnaranj0.geopaint;
 
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.ActionMenuItemView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +23,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public static final String TAG = "GeoPaint";
 
+    private Menu menu;
+    private boolean penActive = true;
     private GoogleMap mMap;
 
     @Override
@@ -60,9 +65,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.settings_menu, menu);
+        this.menu = menu;
         return true;
     }
 
+    public void togglePen(MenuItem item) {
+        Log.v(TAG, "Toggle pen");
+
+        //Drawable true_icon = Drawable.createFromPath("@android:drawable/ic_menu_edit");
+        //Drawable false_icon = Drawable.createFromPath("@android:drawable/ic_menu_close_clear_cancel");
+
+        MenuItem togglePenButton = menu.getItem(0);
+        if (penActive) {
+            // deactivate pen
+            togglePenButton.setIcon(R.drawable.ic_menu_block);
+        } else {
+            // activate pen
+            togglePenButton.setIcon(R.drawable.ic_menu_edit);
+        }
+        penActive = !penActive;
+
+    }
     public void pickColor(MenuItem item) {
         Log.v(TAG, "Pick a color!");
     }
