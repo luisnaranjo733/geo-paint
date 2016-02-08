@@ -11,6 +11,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -27,6 +29,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean penActive = true;
     private GoogleMap mMap;
 
+    private GoogleApiClient mGoogleApiClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +40,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+//        if (mGoogleApiClient == null) {
+//            mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                    .addConnectionCallbacks(this)
+//                    .addOnConnectionFailedListener(this)
+//                    .addApi(LocationServices.API)
+//                    .build();
+//        }
 
     }
 
@@ -86,7 +97,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         penActive = !penActive;
 
     }
+
     public void pickColor(MenuItem item) {
         Log.v(TAG, "Pick a color!");
+    }
+
+    public void shareImage(MenuItem item) {
+        Log.v(TAG, "Share the image!");
     }
 }

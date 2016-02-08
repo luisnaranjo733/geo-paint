@@ -13,4 +13,9 @@
         android:title="Pick pen color"
         android:onClick="pickColor"
         />
+
+    <Item
+        android:title="Share image"
+        android:onClick="shareImage"
+        />
 </menu>
