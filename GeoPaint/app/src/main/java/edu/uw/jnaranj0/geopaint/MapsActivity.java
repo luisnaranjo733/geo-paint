@@ -56,7 +56,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        //inflater.inflate(R.menu.game_menu, menu);
+        inflater.inflate(R.menu.settings_menu, menu);
         return true;
     }
 }
