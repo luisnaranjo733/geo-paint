@@ -21,6 +21,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -28,13 +29,20 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
 import android.Manifest;
 import android.widget.Toast;
+
+import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     // Start of GoogleApiClient.ConnectionCallbacks methods
     private final int PERMISSION_REQUEST_CODE = 19;
+    //private PolylineOptions polylineOptions;
+    private Polyline polyline;
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -150,9 +158,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiSettings.setZoomControlsEnabled(true);
 
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng seattle = new LatLng(47.6633296,-122.4998691);
+        mMap.addMarker(new MarkerOptions().position(seattle).title("Marker in Seattle"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(seattle));
     }
 
     @Override
@@ -198,7 +206,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // LocationListener method
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(this, "asdfa", Toast.LENGTH_SHORT).show();
-        Log.v(TAG, "Location changed: " +   location.toString());
+        //Toast.makeText(this, "asdfa", Toast.LENGTH_SHORT).show();
+        Log.v(TAG, "Location changed: " + location.getLatitude() + ", " + location.getLongitude());
+
+        LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
+        if (polyline == null) {
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.add(coordinate);
+            polyline = mMap.addPolyline(polylineOptions);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 13));
+        } else {
+            List<LatLng> points = polyline.getPoints();
+            points.add(coordinate);
+            polyline.setPoints(points);
+            
+        }
+
     }
 }
