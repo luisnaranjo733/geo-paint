@@ -128,7 +128,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     protected void onStop() {
+
         mGoogleApiClient.disconnect();
+        super.onStop();
     }
 
 
