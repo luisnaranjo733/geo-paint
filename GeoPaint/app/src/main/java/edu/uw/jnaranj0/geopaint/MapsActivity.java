@@ -29,6 +29,7 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import android.Manifest;
+import android.widget.Toast;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -47,7 +48,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         if (permission == PackageManager.PERMISSION_GRANTED) {
-            Log.v(TAG, "Location permission granted!");
+            Log.v(TAG, "Location permission granted!!");
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, request, this);
 
         } else {
@@ -71,6 +72,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
+                    onConnected(new Bundle());
 
                 } else {
 
@@ -194,6 +196,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // LocationListener method
     @Override
     public void onLocationChanged(Location location) {
+        Toast.makeText(this, "asdfa", Toast.LENGTH_SHORT).show();
         Log.v(TAG, "Location changed: " +   location.toString());
     }
 }
