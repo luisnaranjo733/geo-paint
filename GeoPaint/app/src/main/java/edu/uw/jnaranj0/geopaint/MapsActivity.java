@@ -50,6 +50,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     // Start of GoogleApiClient.ConnectionCallbacks methods
     private final int PERMISSION_REQUEST_CODE = 19;
     private Polyline polyline;
+    private int currentColor = -1;
 
     @Override
     public void onConnected(Bundle bundle) {
@@ -159,9 +160,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         uiSettings.setZoomControlsEnabled(true);
 
         // Add a marker in Sydney and move the camera
-        LatLng seattle = new LatLng(47.6633296,-122.4998691);
-        mMap.addMarker(new MarkerOptions().position(seattle).title("Marker in Seattle"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(seattle, 18));
+        LatLng seattle = new LatLng(47.6628344,-122.305184);
+        //mMap.addMarker(new MarkerOptions().position(seattle).title("Marker in Seattle"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(seattle, 20));
     }
 
     @Override
@@ -180,10 +181,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         MenuItem togglePenButton = menu.getItem(0);
         if (penActive) {
+            Toast.makeText(this, "Pen deactivated!", Toast.LENGTH_SHORT);
             // deactivate pen
             togglePenButton.setIcon(R.drawable.ic_menu_block);
             // erase current polyline
+            polyline.remove();
         } else {
+            Toast.makeText(this, "Pen activated!", Toast.LENGTH_SHORT);
             // activate pen
             togglePenButton.setIcon(R.drawable.ic_menu_edit);
         }
@@ -195,7 +199,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.v(TAG, "Pick a color!");
         // erase current polyline
         // change color
-
+        polyline.remove();
     }
 
     public void shareImage(MenuItem item) {
@@ -218,14 +222,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.v(TAG, "PEN ACTIVE");
             LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
             if (polyline == null) {
-                PolylineOptions polylineOptions = new PolylineOptions();
-                polylineOptions.add(coordinate);
+                PolylineOptions polylineOptions = new PolylineOptions().add(coordinate);
+                if (currentColor != -1) {
+                    polylineOptions.color(currentColor);
+                }
                 polyline = mMap.addPolyline(polylineOptions);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 20));
             } else {
                 List<LatLng> points = polyline.getPoints();
                 points.add(coordinate);
                 polyline.setPoints(points);
+                polyline.setColor(currentColor);
 
             }
         } else {
