@@ -39,9 +39,16 @@ import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    public static final String TAG = "GeoPaint";
+
+    private Menu menu;
+    private boolean penActive = false;
+    private GoogleMap mMap;
+
+    private GoogleApiClient mGoogleApiClient;
+
     // Start of GoogleApiClient.ConnectionCallbacks methods
     private final int PERMISSION_REQUEST_CODE = 19;
-    //private PolylineOptions polylineOptions;
     private Polyline polyline;
 
     @Override
@@ -102,13 +109,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // End of GoogleApiClient.ConnectionCallbacks methods
 
-    public static final String TAG = "GeoPaint";
 
-    private Menu menu;
-    private boolean penActive = true;
-    private GoogleMap mMap;
-
-    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,7 +161,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Add a marker in Sydney and move the camera
         LatLng seattle = new LatLng(47.6633296,-122.4998691);
         mMap.addMarker(new MarkerOptions().position(seattle).title("Marker in Seattle"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(seattle));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(seattle, 18));
     }
 
     @Override
@@ -181,6 +182,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (penActive) {
             // deactivate pen
             togglePenButton.setIcon(R.drawable.ic_menu_block);
+            // erase current polyline
         } else {
             // activate pen
             togglePenButton.setIcon(R.drawable.ic_menu_edit);
@@ -191,6 +193,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void pickColor(MenuItem item) {
         Log.v(TAG, "Pick a color!");
+        // erase current polyline
+        // change color
+
     }
 
     public void shareImage(MenuItem item) {
@@ -216,7 +221,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 PolylineOptions polylineOptions = new PolylineOptions();
                 polylineOptions.add(coordinate);
                 polyline = mMap.addPolyline(polylineOptions);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 18));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 20));
             } else {
                 List<LatLng> points = polyline.getPoints();
                 points.add(coordinate);
