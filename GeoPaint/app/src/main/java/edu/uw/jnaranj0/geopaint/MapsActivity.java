@@ -209,17 +209,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         //Toast.makeText(this, "asdfa", Toast.LENGTH_SHORT).show();
         Log.v(TAG, "Location changed: " + location.getLatitude() + ", " + location.getLongitude());
 
-        LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
-        if (polyline == null) {
-            PolylineOptions polylineOptions = new PolylineOptions();
-            polylineOptions.add(coordinate);
-            polyline = mMap.addPolyline(polylineOptions);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 13));
+        if (penActive) {
+            Log.v(TAG, "PEN ACTIVE");
+            LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
+            if (polyline == null) {
+                PolylineOptions polylineOptions = new PolylineOptions();
+                polylineOptions.add(coordinate);
+                polyline = mMap.addPolyline(polylineOptions);
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 18));
+            } else {
+                List<LatLng> points = polyline.getPoints();
+                points.add(coordinate);
+                polyline.setPoints(points);
+
+            }
         } else {
-            List<LatLng> points = polyline.getPoints();
-            points.add(coordinate);
-            polyline.setPoints(points);
-            
+            Log.v(TAG, "Pen not active");
         }
 
     }
