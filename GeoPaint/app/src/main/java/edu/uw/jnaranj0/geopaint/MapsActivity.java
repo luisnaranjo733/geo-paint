@@ -59,8 +59,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Manifest.permission.ACCESS_FINE_LOCATION);
 
         LocationRequest request = new LocationRequest();
-        request.setInterval(10000);
-        request.setFastestInterval(5000);
+        request.setInterval(30000);
+        request.setFastestInterval(1000);
         request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         if (permission == PackageManager.PERMISSION_GRANTED) {
@@ -181,15 +181,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         MenuItem togglePenButton = menu.getItem(0);
         if (penActive) {
-            Toast.makeText(this, "Pen deactivated!", Toast.LENGTH_SHORT);
+            Toast.makeText(this, "Pen deactivated!", Toast.LENGTH_SHORT).show();
             // deactivate pen
             togglePenButton.setIcon(R.drawable.ic_menu_block);
-            // erase current polyline
-            polyline.remove();
+
         } else {
-            Toast.makeText(this, "Pen activated!", Toast.LENGTH_SHORT);
+            Toast.makeText(this, "Pen activated!", Toast.LENGTH_SHORT).show();
             // activate pen
             togglePenButton.setIcon(R.drawable.ic_menu_edit);
+            if (polyline != null) {
+                polyline.remove();
+            }
         }
         penActive = !penActive;
 
@@ -200,6 +202,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // erase current polyline
         // change color
         polyline.remove();
+    }
+
+    public void removePolyLine() {
+        polyline.remove();
+        polyline = null;
     }
 
     public void shareImage(MenuItem item) {
@@ -222,17 +229,20 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.v(TAG, "PEN ACTIVE");
             LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
             if (polyline == null) {
+                Log.v(TAG, "Instantiating polyline");
                 PolylineOptions polylineOptions = new PolylineOptions().add(coordinate);
-                if (currentColor != -1) {
-                    polylineOptions.color(currentColor);
-                }
+//                if (currentColor != -1) {
+//                    Log.v(TAG, "Updating color of polyline");
+//                    polylineOptions.color(currentColor);
+//                }
                 polyline = mMap.addPolyline(polylineOptions);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 20));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 18));
             } else {
+                Log.v(TAG, "Updating polyline");
                 List<LatLng> points = polyline.getPoints();
                 points.add(coordinate);
                 polyline.setPoints(points);
-                polyline.setColor(currentColor);
+                //polyline.setColor(currentColor);
 
             }
         } else {
