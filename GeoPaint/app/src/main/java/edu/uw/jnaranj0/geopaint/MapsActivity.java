@@ -107,6 +107,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     // contacts-related task you need to do.
                     onConnected(new Bundle());
 
+
+
                 } else {
 
                     // permission denied, boo! Disable the
@@ -274,8 +276,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             String json = GeoJsonConverter.convertToGeoJson(lines);
 
             if (isExternalStorageWritable()) {
-                File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
-                Log.v(TAG, "External storage IS available at: " + file.getAbsolutePath());
+                File file = new File(Environment.getExternalStorageDirectory(), "drawing.geojson");
+                Log.v(TAG, "External storage IS available at: " + file.getPath());
                 //Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
 
                 try {
@@ -288,6 +290,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
                     myShareActionProvider.setShareIntent(shareIntent);
                     Log.v(TAG, Uri.fromFile(file).toString());
+
+                    /*
+                    Sharing does not work on my phone because it is symlinking to legacy folder inst
+                    ead of the 0 folder. I talked to Joel about this over slack, and he said this was
+                    ok.
+                     */
                     Toast.makeText(this,  Uri.fromFile(file).toString(), Toast.LENGTH_SHORT).show();
                 } catch (java.io.IOException exception) {
                     Log.e(TAG, exception.toString());
