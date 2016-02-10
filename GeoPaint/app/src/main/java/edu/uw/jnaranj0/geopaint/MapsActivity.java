@@ -35,11 +35,14 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import android.Manifest;
 import android.widget.Toast;
 
+import org.xdty.preference.colorpicker.ColorPickerDialog;
+import org.xdty.preference.colorpicker.ColorPickerSwatch;
+
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    public static final String TAG = "GeoPaint";
+    public static final String TAG = "**GeoPaint**";
 
     private Menu menu;
     private boolean penActive = false;
@@ -189,9 +192,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(this, "Pen activated!", Toast.LENGTH_SHORT).show();
             // activate pen
             togglePenButton.setIcon(R.drawable.ic_menu_edit);
-            if (polyline != null) {
-                polyline.remove();
-            }
+            removePolyLine();
         }
         penActive = !penActive;
 
@@ -201,12 +202,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.v(TAG, "Pick a color!");
         // erase current polyline
         // change color
-        polyline.remove();
+        removePolyLine();
+
+        currentColor = ContextCompat.getColor(this, R.color.flamingo);
+
+        //textView = (TextView) findViewById(R.id.text);
+
+        int[] mColors = getResources().getIntArray(R.array.default_rainbow);
+
+        ColorPickerDialog dialog = ColorPickerDialog.newInstance(R.string.color_picker_default_title,
+                mColors,
+                currentColor,
+                5, // Number of columns
+                ColorPickerDialog.SIZE_SMALL);
+
+        dialog.setOnColorSelectedListener(new ColorPickerSwatch.OnColorSelectedListener() {
+
+            @Override
+            public void onColorSelected(int color) {
+                currentColor = color;
+                Log.v(TAG, "Selected color: " + currentColor);
+                Toast.makeText(MapsActivity.this, "Selected color: " + currentColor, Toast.LENGTH_SHORT).show();
+            }
+
+        });
+
+        dialog.show(getFragmentManager(), "color_dialog_test");
     }
 
     public void removePolyLine() {
-        polyline.remove();
-        polyline = null;
+        if (polyline != null) {
+            polyline.remove();
+            polyline = null;
+        }
+
     }
 
     public void shareImage(MenuItem item) {
@@ -231,10 +260,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (polyline == null) {
                 Log.v(TAG, "Instantiating polyline");
                 PolylineOptions polylineOptions = new PolylineOptions().add(coordinate);
-//                if (currentColor != -1) {
-//                    Log.v(TAG, "Updating color of polyline");
-//                    polylineOptions.color(currentColor);
-//                }
+                if (currentColor != -1) {
+                    Log.v(TAG, "Updating color of polyline");
+                    polylineOptions.color(currentColor);
+                }
                 polyline = mMap.addPolyline(polylineOptions);
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 18));
             } else {
