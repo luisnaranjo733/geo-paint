@@ -35,6 +35,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import android.Manifest;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xdty.preference.colorpicker.ColorPickerDialog;
 import org.xdty.preference.colorpicker.ColorPickerSwatch;
 
@@ -238,8 +241,46 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public void shareImage(MenuItem item) {
-        Log.v(TAG, "Share the image!");
+    public void saveDrawing(MenuItem item) {
+        Log.v(TAG, "Save the drawing!");
+
+        try {
+            JSONObject root = new JSONObject();
+            root.put("type", "FeatureCollection");
+            JSONArray features = new JSONArray();
+            // populate features
+            JSONObject lineString = new JSONObject();
+
+            lineString.put("type", "Feature");
+
+            JSONObject lineStringGeometry = new JSONObject();
+            lineStringGeometry.put("type", "LineString");
+            JSONArray coordinates = new JSONArray();
+            // populate array with coordinates
+            List<LatLng> points = polyline.getPoints();
+            for (LatLng point: points) {
+                //coordinates.put("[" + point.latitude + "," + point.longitude + "]");
+                coordinates.put(point);
+            }
+
+            lineStringGeometry.put("coordinates",  coordinates);
+
+            JSONObject lineStringProperties = new JSONObject();
+            lineStringProperties.put("prop0", "value0");
+            lineStringProperties.put("prop1", 0.0);
+
+            lineString.put("geometry", lineStringGeometry);
+            lineString.put("properties", lineStringProperties);
+            features.put(lineString);
+            root.put("features", features);
+
+            Log.v(TAG, root.toString());
+        } catch (JSONException exception) {
+            exception.printStackTrace();
+        }
+
+
+
     }
 
     // GoogleApiClient.OnConnectionFailedListener callback

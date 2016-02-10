@@ -14,8 +14,8 @@
         android:onClick="pickColor"
         />
 
-    <Item
-        android:title="Share image"
-        android:onClick="shareImage"
+    <item
+        android:title="Save drawing"
+        android:onClick="saveDrawing"
         />
 </menu>
