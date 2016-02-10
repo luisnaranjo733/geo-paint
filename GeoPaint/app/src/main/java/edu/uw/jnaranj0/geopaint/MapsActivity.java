@@ -258,60 +258,25 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void saveDrawing(MenuItem item) {
         Log.v(TAG, "Save the drawing!");
 
-        try {
-            JSONObject root = new JSONObject();
-            root.put("type", "FeatureCollection");
-            JSONArray features = new JSONArray();
-            // populate features
-            JSONObject lineString = new JSONObject();
-
-            lineString.put("type", "Feature");
-
-            JSONObject lineStringGeometry = new JSONObject();
-            lineStringGeometry.put("type", "LineString");
-            JSONArray coordinates = new JSONArray();
-            // populate array with coordinates
-            List<LatLng> points = polyline.getPoints();
-            for (int i=0; i < points.size(); i++) {
-                LatLng point = points.get(i);
-                String representation = "[" + point.latitude + "," + point.longitude + "]";
-                if (i !=  points.size()) {
-                    representation += ",";
-                }
-                coordinates.put(representation);
-                //coordinates.put(point);
-            }
-
-            lineStringGeometry.put("coordinates",  coordinates);
-
-            JSONObject lineStringProperties = new JSONObject();
-            lineStringProperties.put("prop0", "value0");
-            lineStringProperties.put("prop1", 0.0);
-
-            lineString.put("geometry", lineStringGeometry);
-            lineString.put("properties", lineStringProperties);
-            features.put(lineString);
-            root.put("features", features);
-
-            if (isExternalStorageWritable()) {
-
-                File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
-                Log.v(TAG, "External storage IS available at: " + file.getAbsolutePath());
-                Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
-                FileOutputStream outputStream = new FileOutputStream(file);
-                outputStream.write(root.toString().getBytes()); //write the string to the file
-                outputStream.close(); //close the stream
-            } else {
-                Log.v(TAG, "External storage is NOT available");
-                Toast.makeText(this, "shits not available foo", Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception exception) {
-            Log.v(TAG, exception.toString());
-            exception.printStackTrace();
-            Toast.makeText(this, exception.toString(), Toast.LENGTH_LONG);
-        }
-
-
+//        if  (polyline != null) {
+//            List<LatLng> lines = polyline.getPoints()
+//            String json = GeoJsonConverter.convertToGeoJson(lines);
+//
+//            if (isExternalStorageWritable()) {
+//
+//                File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
+//                Log.v(TAG, "External storage IS available at: " + file.getAbsolutePath());
+//                Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
+//                FileOutputStream outputStream = new FileOutputStream(file);
+//                outputStream.write(json.getBytes()); //write the string to the file
+//                outputStream.close(); //close the stream
+//            } else {
+//                Log.v(TAG, "External storage is NOT available");
+//                Toast.makeText(this, "shits not available foo", Toast.LENGTH_LONG).show();
+//            }
+//        } else {
+//            Toast.makeText(this, "No lines to save yet!", Toast.LENGTH_LONG).show();
+//        }
 
     }
 
