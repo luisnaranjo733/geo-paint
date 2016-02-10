@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -41,6 +42,8 @@ import org.json.JSONObject;
 import org.xdty.preference.colorpicker.ColorPickerDialog;
 import org.xdty.preference.colorpicker.ColorPickerSwatch;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -207,7 +210,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         // change color
         removePolyLine();
 
-        currentColor = ContextCompat.getColor(this, R.color.flamingo);
+        if (currentColor == -1) {
+            currentColor = ContextCompat.getColor(this, R.color.flamingo);
+        }
 
         //textView = (TextView) findViewById(R.id.text);
 
@@ -241,6 +246,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if (Environment.MEDIA_MOUNTED.equals(state)) {
+            return true;
+        }
+        return false;
+    }
+
     public void saveDrawing(MenuItem item) {
         Log.v(TAG, "Save the drawing!");
 
@@ -258,9 +272,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             JSONArray coordinates = new JSONArray();
             // populate array with coordinates
             List<LatLng> points = polyline.getPoints();
-            for (LatLng point: points) {
-                //coordinates.put("[" + point.latitude + "," + point.longitude + "]");
-                coordinates.put(point);
+            for (int i=0; i < points.size(); i++) {
+                LatLng point = points.get(i);
+                String representation = "[" + point.latitude + "," + point.longitude + "]";
+                if (i !=  points.size()) {
+                    representation += ",";
+                }
+                coordinates.put(representation);
+                //coordinates.put(point);
             }
 
             lineStringGeometry.put("coordinates",  coordinates);
@@ -274,9 +293,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             features.put(lineString);
             root.put("features", features);
 
-            Log.v(TAG, root.toString());
-        } catch (JSONException exception) {
+            if (isExternalStorageWritable()) {
+
+                File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
+                Log.v(TAG, "External storage IS available at: " + file.getAbsolutePath());
+                Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
+                FileOutputStream outputStream = new FileOutputStream(file);
+                outputStream.write(root.toString().getBytes()); //write the string to the file
+                outputStream.close(); //close the stream
+            } else {
+                Log.v(TAG, "External storage is NOT available");
+                Toast.makeText(this, "shits not available foo", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception exception) {
+            Log.v(TAG, exception.toString());
             exception.printStackTrace();
+            Toast.makeText(this, exception.toString(), Toast.LENGTH_LONG);
         }
 
 
