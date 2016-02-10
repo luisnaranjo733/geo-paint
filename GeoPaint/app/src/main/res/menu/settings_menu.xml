@@ -9,6 +9,12 @@
         app:showAsAction="ifRoom"
         />
 
+    <item android:id="@+id/action_share"
+        android:title="Share"
+        app:showAsAction="ifRoom"
+        app:actionProviderClass="android.support.v7.widget.ShareActionProvider"/>
+
+
     <item
         android:title="Pick pen color"
         android:onClick="pickColor"

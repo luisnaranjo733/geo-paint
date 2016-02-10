@@ -5,13 +5,16 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.menu.ActionMenuItemView;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -58,11 +61,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleApiClient mGoogleApiClient;
 
     private ArrayList<Polyline> lines;
-    private Polyline currentLine;
+    private Polyline currentPolyline;
+    private Intent shareIntent;
+    private ShareActionProvider myShareActionProvider;
 
     // Start of GoogleApiClient.ConnectionCallbacks methods
     private final int PERMISSION_REQUEST_CODE = 19;
-    private Polyline polyline;
     private int currentColor = -1;
 
     @Override
@@ -185,6 +189,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.settings_menu, menu);
         this.menu = menu;
+
+        MenuItem shareItem = menu.findItem(R.id.action_share);
+        myShareActionProvider =
+                (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+
+        shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+
+
+
+        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.EMPTY);
+        myShareActionProvider.setShareIntent(shareIntent);
+
         return true;
     }
 
@@ -196,7 +213,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Toast.makeText(this, "Pen deactivated!", Toast.LENGTH_SHORT).show();
             // deactivate pen
             togglePenButton.setIcon(R.drawable.ic_menu_block);
-            polyline = null;
+            currentPolyline = null;
 
         } else {
             Toast.makeText(this, "Pen activated!", Toast.LENGTH_SHORT).show();
@@ -210,7 +227,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void pickColor(MenuItem item) {
         Log.v(TAG, "Pick a color!");
         // erase current polyline
-        polyline = null;
+        currentPolyline = null;
         // change color
 
         if (currentColor == -1) {
@@ -259,19 +276,28 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (isExternalStorageWritable()) {
                 File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
                 Log.v(TAG, "External storage IS available at: " + file.getAbsolutePath());
-                Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
 
                 try {
                     FileOutputStream outputStream = new FileOutputStream(file);
                     outputStream.write(json.getBytes()); //write the string to the file
                     outputStream.close(); //close the stream
+
+                    shareIntent = new Intent(Intent.ACTION_SEND);
+                    shareIntent.setType("text/plain");
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+                    myShareActionProvider.setShareIntent(shareIntent);
+                    Log.v(TAG, Uri.fromFile(file).toString());
+                    Toast.makeText(this,  Uri.fromFile(file).toString(), Toast.LENGTH_SHORT).show();
                 } catch (java.io.IOException exception) {
                     Log.e(TAG, exception.toString());
+                    Toast.makeText(this, "IO error", Toast.LENGTH_SHORT).show();
+
                 }
 
             } else {
                 Log.v(TAG, "External storage is NOT available");
-                Toast.makeText(this, "shits not available foo", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "External storage is NOT available", Toast.LENGTH_LONG).show();
             }
         } else {
             Toast.makeText(this, "Sorry, no lines drawn yet!", Toast.LENGTH_LONG).show();
@@ -295,18 +321,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
 
             // init, change color and raise pen all nullify polyline variable
-            if (polyline == null) {
+            if (currentPolyline == null) {
                 // add polyline to list
                 PolylineOptions options = new PolylineOptions().color(currentColor);
-                polyline = mMap.addPolyline(options);
-                lines.add(polyline);
+                currentPolyline = mMap.addPolyline(options);
+                lines.add(currentPolyline);
                 // set that to be the  "current" polyline
             }
             // we have a current polyline here
-            List<LatLng> points = polyline.getPoints();
+            List<LatLng> points = currentPolyline.getPoints();
             points.add(coordinate);
-            polyline.setPoints(points);
+            currentPolyline.setPoints(points);
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 18));
+
+            shareIntent.putExtra(Intent.EXTRA_STREAM, "");
+            myShareActionProvider.setShareIntent(shareIntent);
             // draw a point on this line, with the current color
         }
     }
