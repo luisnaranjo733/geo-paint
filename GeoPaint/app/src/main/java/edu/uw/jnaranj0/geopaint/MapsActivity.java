@@ -44,6 +44,7 @@ import org.xdty.preference.colorpicker.ColorPickerSwatch;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -55,6 +56,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
 
     private GoogleApiClient mGoogleApiClient;
+
+    private ArrayList<Polyline> lines;
+    private Polyline currentLine;
 
     // Start of GoogleApiClient.ConnectionCallbacks methods
     private final int PERMISSION_REQUEST_CODE = 19;
@@ -139,6 +143,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.v(TAG,  "Instantiated google api client");
         }
 
+        lines = new ArrayList<Polyline>();
+
     }
 
     protected void onStart() {
@@ -185,20 +191,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void togglePen(MenuItem item) {
         Log.v(TAG, "Toggle pen");
 
-        //Drawable true_icon = Drawable.createFromPath("@android:drawable/ic_menu_edit");
-        //Drawable false_icon = Drawable.createFromPath("@android:drawable/ic_menu_close_clear_cancel");
-
         MenuItem togglePenButton = menu.getItem(0);
         if (penActive) {
             Toast.makeText(this, "Pen deactivated!", Toast.LENGTH_SHORT).show();
             // deactivate pen
             togglePenButton.setIcon(R.drawable.ic_menu_block);
+            polyline = null;
 
         } else {
             Toast.makeText(this, "Pen activated!", Toast.LENGTH_SHORT).show();
             // activate pen
             togglePenButton.setIcon(R.drawable.ic_menu_edit);
-            removePolyLine();
         }
         penActive = !penActive;
 
@@ -207,8 +210,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void pickColor(MenuItem item) {
         Log.v(TAG, "Pick a color!");
         // erase current polyline
+        polyline = null;
         // change color
-        removePolyLine();
 
         if (currentColor == -1) {
             currentColor = ContextCompat.getColor(this, R.color.flamingo);
@@ -238,14 +241,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         dialog.show(getFragmentManager(), "color_dialog_test");
     }
 
-    public void removePolyLine() {
-        if (polyline != null) {
-            polyline.remove();
-            polyline = null;
-        }
-
-    }
-
     /* Checks if external storage is available for read and write */
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
@@ -257,26 +252,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void saveDrawing(MenuItem item) {
         Log.v(TAG, "Save the drawing!");
+        if (!lines.isEmpty()) {
+            Toast.makeText(this, "Saving drawing", Toast.LENGTH_LONG).show();
+            String json = GeoJsonConverter.convertToGeoJson(lines);
 
-//        if  (polyline != null) {
-//            List<LatLng> lines = polyline.getPoints()
-//            String json = GeoJsonConverter.convertToGeoJson(lines);
-//
-//            if (isExternalStorageWritable()) {
-//
-//                File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
-//                Log.v(TAG, "External storage IS available at: " + file.getAbsolutePath());
-//                Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
-//                FileOutputStream outputStream = new FileOutputStream(file);
-//                outputStream.write(json.getBytes()); //write the string to the file
-//                outputStream.close(); //close the stream
-//            } else {
-//                Log.v(TAG, "External storage is NOT available");
-//                Toast.makeText(this, "shits not available foo", Toast.LENGTH_LONG).show();
-//            }
-//        } else {
-//            Toast.makeText(this, "No lines to save yet!", Toast.LENGTH_LONG).show();
-//        }
+            if (isExternalStorageWritable()) {
+                File file = new File(this.getExternalFilesDir(null), "drawing.geojson");
+                Log.v(TAG, "External storage IS available at: " + file.getAbsolutePath());
+                Toast.makeText(this, file.getAbsolutePath().toString(), Toast.LENGTH_LONG).show();
+
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(file);
+                    outputStream.write(json.getBytes()); //write the string to the file
+                    outputStream.close(); //close the stream
+                } catch (java.io.IOException exception) {
+                    Log.e(TAG, exception.toString());
+                }
+
+            } else {
+                Log.v(TAG, "External storage is NOT available");
+                Toast.makeText(this, "shits not available foo", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(this, "Sorry, no lines drawn yet!", Toast.LENGTH_LONG).show();
+        }
 
     }
 
@@ -293,28 +292,22 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         Log.v(TAG, "Location changed: " + location.getLatitude() + ", " + location.getLongitude());
 
         if (penActive) {
-            Log.v(TAG, "PEN ACTIVE");
             LatLng coordinate = new LatLng(location.getLatitude(), location.getLongitude());
+
+            // init, change color and raise pen all nullify polyline variable
             if (polyline == null) {
-                Log.v(TAG, "Instantiating polyline");
-                PolylineOptions polylineOptions = new PolylineOptions().add(coordinate);
-                if (currentColor != -1) {
-                    Log.v(TAG, "Updating color of polyline");
-                    polylineOptions.color(currentColor);
-                }
-                polyline = mMap.addPolyline(polylineOptions);
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 18));
-            } else {
-                Log.v(TAG, "Updating polyline");
-                List<LatLng> points = polyline.getPoints();
-                points.add(coordinate);
-                polyline.setPoints(points);
-                //polyline.setColor(currentColor);
-
+                // add polyline to list
+                PolylineOptions options = new PolylineOptions().color(currentColor);
+                polyline = mMap.addPolyline(options);
+                lines.add(polyline);
+                // set that to be the  "current" polyline
             }
-        } else {
-            Log.v(TAG, "Pen not active");
+            // we have a current polyline here
+            List<LatLng> points = polyline.getPoints();
+            points.add(coordinate);
+            polyline.setPoints(points);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(coordinate, 18));
+            // draw a point on this line, with the current color
         }
-
     }
 }
